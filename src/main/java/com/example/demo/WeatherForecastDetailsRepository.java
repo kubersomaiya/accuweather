@@ -16,7 +16,7 @@ import jakarta.transaction.Transactional;
 public interface WeatherForecastDetailsRepository extends JpaRepository<WeatherForecastDetails, Long> {
 
     
-    @Query("SELECT a FROM WeatherForecastDetails a WHERE a.state = ?1 AND a.district = ?2")
+    @Query("SELECT a FROM WeatherForecastDetails a WHERE a.state = ?1 AND a.district = ?2 AND a.date >= CURRENT_DATE")
     List<WeatherForecastDetails> filterActualForecastData(String state, String district);
 
     @Query("SELECT a FROM WeatherForecastDetails a WHERE a.district = ?1 AND a.state = ?2 AND a.accuLocationKey = ?3 AND a.date = ?4")

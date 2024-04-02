@@ -68,6 +68,7 @@ public class WeatherService {
     }
 
     public void callForecastApiForAllData() {
+        actRepository.deleteForecastDataGreaterThanToday();
         List<LocationDetails> allData = accuWeatherRepository.findAll();
         List<WeatherForecastDetails> forecastData = new ArrayList<>();
         List<WeatherForecastDetails> finalData = new ArrayList<>();
@@ -85,15 +86,14 @@ public class WeatherService {
         actRepository.saveAll(finalData);
     }
 
-    @Scheduled(cron = "0 0 6 * * *")
+    @Scheduled(cron = "0 10 17 * * *")
     public void saveOrUpdateLocationData() {
         callAccuweatherLocationApiForAllData();
 
     }
 
-    @Scheduled(cron = "0 0 6 * * *")
+    @Scheduled(cron = "0 10 17 * * *")
     public void saveOrUpdateForecastData() {
-        actRepository.deleteForecastDataGreaterThanToday();
         callForecastApiForAllData();
     }
 

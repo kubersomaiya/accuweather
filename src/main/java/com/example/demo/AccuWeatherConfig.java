@@ -29,7 +29,7 @@ public class AccuWeatherConfig {
                 //         "");
                 // List<LocationDetails> dummyData = List.of(nobj1, nobj2, nobj3, nobj4);
                 // repository.saveAll(dummyData);
-
+                
             } catch (Exception e) {
                 // Handle the exception here, you can log it or perform any other necessary
                 // action

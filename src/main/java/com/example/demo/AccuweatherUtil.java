@@ -28,7 +28,6 @@ public class AccuweatherUtil {
     private LocationDetailsRepository accuWeatherRepository;
 
     public String getAccuweatherLocationKey(String district) {
-        System.out.println("IN GETACCUWEATHERLOCATOINKEY");
         String locationKey = "";
         try {
             String accuWeatherUrl = "http://dataservice.accuweather.com/locations/v1/cities/search?apikey=";
