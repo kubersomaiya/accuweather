@@ -8,7 +8,9 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +31,8 @@ public class OpenweathermapUtil implements WeatherInterface {
     @Autowired
     private LocationDetailsRepository ldRepo;
 
-
     private static final Logger LOGGER = Logger.getLogger(OpenweathermapUtil.class.getName());
+
     // below method not required!!
     @Override
     public String getLocationKey(String district) {
@@ -77,13 +79,11 @@ public class OpenweathermapUtil implements WeatherInterface {
                 Double minTemp = 0.0;
                 Double maxTemp = 0.0;
                 List<OpenForecastData> forecastDataList = weatherForecast.getList();
-                List<String> dayForecasts = new ArrayList<>();
-                List<String> nightForecasts = new ArrayList<>();
-                List<LocalDate> dates = new ArrayList<>();
-                List<Double> minTemps = new ArrayList<>();
-                List<Double> maxTemps = new ArrayList<>();
 
+                HashMap<LocalDate, WeatherForecastDetails> hashMap = new HashMap<>();
+                WeatherForecastDetails obj;
                 for (OpenForecastData forecastData : forecastDataList) {
+                    obj = new WeatherForecastDetails();
                     String date = forecastData.getDtTxt().substring(0, 10);
                     String time = forecastData.getDtTxt().substring(11, 13);
                     int hour = Integer.parseInt(time);
@@ -95,26 +95,37 @@ public class OpenweathermapUtil implements WeatherInterface {
                     List<Weather> weath = forecastData.getWeather();
 
                     for (Weather data : weath) {
-                        if ((hour == 9)) {
-                            dayForecasts.add(data.getDescription());
-                            dates.add(forecastDate);
-                            minTemps.add(minTemp);
-                            maxTemps.add(maxTemp);
-                        } else if ((hour == 21)) {
-                            nightForecasts.add(data.getDescription());
+                        if (hour == 9) {
+                            obj = hashMap.get(forecastDate);
+                            if (obj == null) {
+                                obj = new WeatherForecastDetails();
+                                obj.setDate(forecastDate);
+                                obj.setMinTemp(minTemp);
+                                obj.setMaxTemp(maxTemp);
+                                obj.setDistrict(district);
+                                obj.setState(state);
+                                obj.setDayForecast(data.getDescription());
+                                obj.setAccuLocationKey(locationKey);
+                                hashMap.put(forecastDate, obj);
+                            } else {
+                                obj.setDayForecast(data.getDescription());
+                            }
+                        } else if (hour == 21) {
+                            obj = hashMap.get(forecastDate);
+                            if (obj != null) {
+                                obj.setNightForecast(data.getDescription());
+                            }
                         }
                     }
                 }
-                for (int i = 0; i < dayForecasts.size(); i++) {
-                    dayForecast = dayForecasts.get(i);
-                    nightForecast = nightForecasts.get(i);
-                    forecastDate = dates.get(i);
-                    minTemp = minTemps.get(i);
-                    maxTemp = maxTemps.get(i);
-                    WeatherForecastDetails obj = new WeatherForecastDetails(forecastDate, minTemp, maxTemp, dayForecast,
-                            nightForecast, district, state, locationKey);
-                    forecastsList.add(obj);
+
+                for (Map.Entry<LocalDate, WeatherForecastDetails> entry : hashMap.entrySet()) {
+                    LocalDate key = entry.getKey();
+                    WeatherForecastDetails data = entry.getValue();
+                    forecastsList.add(data);
                 }
+                
+
             } else {
                 throw new NoForecastDetailsFoundException("Error in fetching Forecast Details ... " + responseCode);
             }
