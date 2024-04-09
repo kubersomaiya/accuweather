@@ -8,20 +8,15 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
-
-import com.example.demo.LocationDetails;
 import com.example.demo.LocationDetailsRepository;
 import com.example.demo.WeatherForecastDetails;
 import com.example.demo.WeatherInterface;
-import com.example.demo.ForecastDetails.DailyForecast;
 import com.example.demo.exceptions.NoForecastDetailsFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,6 +29,8 @@ public class OpenweathermapUtil implements WeatherInterface {
     @Autowired
     private LocationDetailsRepository ldRepo;
 
+
+    private static final Logger LOGGER = Logger.getLogger(OpenweathermapUtil.class.getName());
     // below method not required!!
     @Override
     public String getLocationKey(String district) {
@@ -120,12 +117,11 @@ public class OpenweathermapUtil implements WeatherInterface {
                 }
             } else {
                 throw new NoForecastDetailsFoundException("Error in fetching Forecast Details ... " + responseCode);
-                // System.out.println("Error in fetching Forecast Details ..."+ responseCode);
             }
         } catch (IOException e) {
             throw new NoForecastDetailsFoundException("Failed to hit API " + e.getMessage());
-            // System.out.println(e.getMessage());
         }
+        LOGGER.info("OpenWeather API successfully executed and list is returned");
         return forecastsList;
     }
 

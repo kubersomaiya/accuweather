@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class WeatherForecastDetailsConverter implements Converter<List<WeatherForecastDetails>, List<WeatherForecastDetailsDTO>> {
 
+    
     @Override
     public List<WeatherForecastDetailsDTO> convert(List<WeatherForecastDetails> source) {
         return source.stream().map(this::entityToDto).collect(Collectors.toList());
@@ -25,6 +26,7 @@ public class WeatherForecastDetailsConverter implements Converter<List<WeatherFo
         dto.setMaxTemp(weatherForecastDetails.getMaxTemp());
         dto.setDayForecast(weatherForecastDetails.getDayForecast());
         dto.setNightForecast(weatherForecastDetails.getNightForecast());
+
         return dto;
     }
 }

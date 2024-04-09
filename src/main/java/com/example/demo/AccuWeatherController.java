@@ -12,7 +12,8 @@ public class AccuWeatherController {
 
     @Autowired  private WeatherService weatherService;
 
-    @GetMapping("/api/v1/accuweather/get-forecast-data")
+    
+    @GetMapping("/api/weather/get-forecast-data")
     public List<WeatherForecastDetailsDTO> getForecastDataFiltered(@RequestParam(required = false) String state,
             @RequestParam(required = false) String district) {
 
@@ -21,5 +22,6 @@ public class AccuWeatherController {
         } else {
             return weatherService.getAllForecastData();
         }
+
     }
 }

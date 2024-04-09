@@ -5,6 +5,7 @@ import com.example.demo.exceptions.NoForecastDetailsFoundException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +24,8 @@ public class WeatherService {
     private WeatherForecastDetailsConverter converter;
     @Autowired 
     private OpenweathermapUtil openweathermapUtil;
+
+    private static final Logger LOGGER = Logger.getLogger(WeatherService.class.getName());
 
     public List<WeatherForecastDetailsDTO> getAllForecastData() {
         return converter.convert(forecastRepo.findAll());
@@ -63,6 +66,7 @@ public class WeatherService {
                 continue;
             }
         }
+        LOGGER.info("Called API for locationKey for all districts and saved in db");
         locationRepo.saveAll(allData);
     }
 
@@ -81,14 +85,15 @@ public class WeatherService {
                 for (WeatherForecastDetails data : forecastData) {
                     finalData.add(data);
                 }
-
+                
             } catch (Exception e) {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
         }
+        LOGGER.info("Called API for forecast details using Accuweather for all districts and saved in db");
         forecastRepo.saveAll(finalData);
     }
-
+    
     
     public List<WeatherForecastDetails> getOpenweatherForecast(String district){
         return openweathermapUtil.getForecastDetails(district);
@@ -110,20 +115,25 @@ public class WeatherService {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
         }
+        LOGGER.info("Called API for forecast details using OpenWeather for all districts and saved in db");
         forecastRepo.saveAll(finalData);
     }
-
+    
     @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateLocationData() {
         callAccuweatherLocationApiForAllData();
+        LOGGER.info("Scheduler to save Location Data executed");
     }
+    
     
     @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateAccuweatherForecastData() {
         callForecastApiForAllData();
+        LOGGER.info("Scheduler to save Forecast Data using Accuweather executed");
     }
     @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateOpenWeatherForecastData() {
         callForecastApiForAllDataOpenWeather();
+        LOGGER.info("Scheduler to save Forecast Data using Openweather executed");
     }
 }

@@ -1,4 +1,6 @@
 package com.example.demo;
+import java.util.logging.Logger;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -7,10 +9,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class AccuweatherApplication {
 
+	private static final Logger LOGGER = Logger.getLogger(AccuweatherApplication.class.getName());
 	@SuppressWarnings("null")
 	public static void main(String[] args)  {
 		SpringApplication.run(AccuweatherApplication.class, args);
-		System.out.println("smooth");
+		LOGGER.info("smooth , application executed successfully");
 	}
 
 

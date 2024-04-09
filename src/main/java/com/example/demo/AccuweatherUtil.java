@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,8 @@ public class AccuweatherUtil implements WeatherInterface {
 
     @Autowired
     private LocationDetailsRepository accuWeatherRepository;
+
+    private static final Logger LOGGER = Logger.getLogger(AccuweatherUtil.class.getName());
 
     @Override
     public String getLocationKey(String district) {
@@ -65,9 +69,11 @@ public class AccuweatherUtil implements WeatherInterface {
             throw new NoForecastDetailsFoundException("Failed to hit API " + e.getMessage());
             // System.out.println(e.getMessage());
         }
+        LOGGER.info("Location Key successfully generated and returned");
         return locationKey;
+        
     }
-
+    
     @Override
     public List<WeatherForecastDetails> getForecastDetails(String locationKey) {
         List<LocationDetails> allData = accuWeatherRepository.findAll();
@@ -80,7 +86,7 @@ public class AccuweatherUtil implements WeatherInterface {
             sb.append(apiKey);
 
             String forecastUrl = sb.toString();
-
+            
             URL urlObj = new URL(forecastUrl);
             HttpURLConnection connection = (HttpURLConnection) urlObj.openConnection();
             connection.setRequestMethod("GET");
@@ -95,12 +101,12 @@ public class AccuweatherUtil implements WeatherInterface {
                         response.append(inputLine);
                     }
                 }
-
+                
                 String jsonData = response.toString();
                 ObjectMapper objectMapper = new ObjectMapper();
                 MainForecast mainForecast = objectMapper.readValue(jsonData, MainForecast.class);
                 List<DailyForecast> dailyForecasts = mainForecast.getDailyForecasts();
-
+                
                 if (dailyForecasts != null) {
                     for (DailyForecast forecast : dailyForecasts) {
                         String date = forecast.getDate().substring(0, 10);
@@ -123,8 +129,8 @@ public class AccuweatherUtil implements WeatherInterface {
                             }
                         }
                         WeatherForecastDetails obj = new WeatherForecastDetails(forecastDate, minTempCel, maxTempCel,
-                                dayForecast,
-                                nightForecast, district, state, locationKey);
+                        dayForecast,
+                        nightForecast, district, state, locationKey);
                         forecastsList.add(obj);
                     }
                 }
@@ -136,6 +142,7 @@ public class AccuweatherUtil implements WeatherInterface {
             throw new NoForecastDetailsFoundException("Failed to hit API" + e.getMessage());
             // System.out.println(e.getMessage());
         }
+        LOGGER.info("Forecast Details successfully generated and returned");
         return forecastsList;
     }
 
