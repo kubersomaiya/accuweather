@@ -14,7 +14,7 @@ public class RestExceptionHandler {
  
     @ExceptionHandler(value = NoForecastDetailsFoundException.class)
     public ResponseEntity<ApiError> handleNoForecastFoundException(){
-        ApiError error = new ApiError(400 , "No Forecast Found", new Date());
+        ApiError error = new ApiError(404 , "No Forecast Found", new Date());
         return new ResponseEntity<ApiError>(error ,HttpStatus.BAD_REQUEST);
     }
 }
