@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,15 +20,16 @@ import com.example.demo.exceptions.NoForecastDetailsFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class AccuweatherUtil {
+public class AccuweatherUtil implements WeatherInterface {
 
-    @Value("${my.api.key}")
+    @Value("${accuweather.api.key}")
     private String apiKey;
 
     @Autowired
     private LocationDetailsRepository accuWeatherRepository;
 
-    public String getAccuweatherLocationKey(String district) {
+    @Override
+    public String getLocationKey(String district) {
         String locationKey = "";
         try {
             String accuWeatherUrl = "http://dataservice.accuweather.com/locations/v1/cities/search?apikey=";
@@ -66,9 +68,8 @@ public class AccuweatherUtil {
         return locationKey;
     }
 
-    // remove from here and paste in service
-
-    public List<WeatherForecastDetails> getForecastDetails(String locationKey) throws ParseException {
+    @Override
+    public List<WeatherForecastDetails> getForecastDetails(String locationKey) {
         List<LocationDetails> allData = accuWeatherRepository.findAll();
         List<WeatherForecastDetails> forecastsList = new ArrayList<>();
         try {
@@ -105,8 +106,11 @@ public class AccuweatherUtil {
                         String date = forecast.getDate().substring(0, 10);
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                         LocalDate forecastDate = LocalDate.parse(date, formatter);
-                        Double minTemp = forecast.getTemperature().getMinimum().getValue();
-                        Double maxTemp = forecast.getTemperature().getMaximum().getValue();
+                        Double minTempFah = forecast.getTemperature().getMinimum().getValue();
+                        Double maxTempFah = forecast.getTemperature().getMaximum().getValue();
+                        Double minTempCel =  Math.floor((minTempFah - 32) * 5 / 9);
+                        Double maxTempCel =  Math.ceil((maxTempFah - 32) * 5 / 9);
+                        System.out.println("--------------------");
                         String dayForecast = forecast.getDay().getIconPhrase();
                         String nightForecast = forecast.getNight().getIconPhrase();
                         String district = "";
@@ -118,7 +122,7 @@ public class AccuweatherUtil {
                                 // break;
                             }
                         }
-                        WeatherForecastDetails obj = new WeatherForecastDetails(forecastDate, minTemp, maxTemp,
+                        WeatherForecastDetails obj = new WeatherForecastDetails(forecastDate, minTempCel, maxTempCel,
                                 dayForecast,
                                 nightForecast, district, state, locationKey);
                         forecastsList.add(obj);

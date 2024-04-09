@@ -11,4 +11,7 @@ public interface LocationDetailsRepository extends JpaRepository<LocationDetails
 
     @Query("SELECT ld FROM LocationDetails ld WHERE ld.accuweather_locationKey = ''")
     List<LocationDetails> findDistrictsWithLocationKeyNull();
+
+    @Query("SELECT ld.state FROM LocationDetails ld WHERE ld.district = ?1")
+    String findStateWithDistrict(String district);
 }

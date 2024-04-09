@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.OpenWeatherMap.OpenweathermapUtil;
 import com.example.demo.exceptions.NoForecastDetailsFoundException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -13,33 +14,35 @@ import org.springframework.stereotype.Service;
 public class WeatherService {
 
     @Autowired
-    private LocationDetailsRepository accuWeatherRepository;
+    private LocationDetailsRepository locationRepo;
     @Autowired
-    private WeatherForecastDetailsRepository actRepository;
+    private WeatherForecastDetailsRepository foorecastRepo;
     @Autowired
     private AccuweatherUtil accuWeatherUtil;
     @Autowired
     private WeatherForecastDetailsConverter converter;
+    @Autowired 
+    private OpenweathermapUtil openweathermapUtil;
 
     public List<WeatherForecastDetailsDTO> getAllForecastData() {
-        return converter.convert(actRepository.findAll());
+        return converter.convert(foorecastRepo.findAll());
     }
 
     public List<WeatherForecastDetailsDTO> getForecastDataByDistrict(String state, String district) {
 
-        return converter.convert(actRepository.filterActualForecastData(state, district));
+        return converter.convert(foorecastRepo.filterActualForecastData(state, district));
     }
 
     public List<LocationDetails> getDistrictsWithLocationKeyNull() {
-        return accuWeatherRepository.findDistrictsWithLocationKeyNull();
+        return locationRepo.findDistrictsWithLocationKeyNull();
     }
 
     public String getLocationKey(String district) {
-        return accuWeatherUtil.getAccuweatherLocationKey(district);
+        return accuWeatherUtil.getLocationKey(district);
     }
 
     public void callAccuweatherLocationApiForAllData() {
-        List<LocationDetails> allData = accuWeatherRepository.findDistrictsWithLocationKeyNull();
+        List<LocationDetails> allData = locationRepo.findDistrictsWithLocationKeyNull();
         for (LocationDetails accuweather : allData) {
             System.out.println("Processing district: " + accuweather.getDistrict());
             try {
@@ -60,7 +63,7 @@ public class WeatherService {
                 continue;
             }
         }
-        accuWeatherRepository.saveAll(allData);
+        locationRepo.saveAll(allData);
     }
 
     public List<WeatherForecastDetails> getForecastData(String locationKey) throws ParseException {
@@ -68,8 +71,8 @@ public class WeatherService {
     }
 
     public void callForecastApiForAllData() {
-        actRepository.deleteForecastDataGreaterThanToday();
-        List<LocationDetails> allData = accuWeatherRepository.findAll();
+        foorecastRepo.deleteForecastDataGreaterThanToday();
+        List<LocationDetails> allData = locationRepo.findAll();
         List<WeatherForecastDetails> forecastData = new ArrayList<>();
         List<WeatherForecastDetails> finalData = new ArrayList<>();
         for (LocationDetails accuweather : allData) {
@@ -83,18 +86,44 @@ public class WeatherService {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
         }
-        actRepository.saveAll(finalData);
+        foorecastRepo.saveAll(finalData);
     }
 
-    @Scheduled(cron = "0 10 17 * * *")
+    
+    public List<WeatherForecastDetails> getOpenweatherForecast(String district){
+        return openweathermapUtil.getForecastDetails(district);
+    }
+    
+    public void callForecastApiForAllDataOpenWeather() {
+        foorecastRepo.deleteForecastDataGreaterThanToday();
+        List<LocationDetails> allData = locationRepo.findAll();
+        List<WeatherForecastDetails> forecastData = new ArrayList<>();
+        List<WeatherForecastDetails> finalData = new ArrayList<>();
+        for (LocationDetails accuweather : allData) {
+            try {
+                forecastData = getOpenweatherForecast(accuweather.getDistrict());
+                for (WeatherForecastDetails data : forecastData) {
+                    finalData.add(data);
+                }
+                
+            } catch (Exception e) {
+                throw new NoForecastDetailsFoundException(e.getMessage());
+            }
+        }
+        foorecastRepo.saveAll(finalData);
+    }
+
+    @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateLocationData() {
         callAccuweatherLocationApiForAllData();
-
     }
-
-    @Scheduled(cron = "0 10 17 * * *")
-    public void saveOrUpdateForecastData() {
+    
+    @Scheduled(cron = "0 0 6 * * *")
+    public void saveOrUpdateAccuweatherForecastData() {
         callForecastApiForAllData();
     }
-
+    @Scheduled(cron = "0 0 6 * * *")
+    public void saveOrUpdateOpenWeatherForecastData() {
+        callForecastApiForAllDataOpenWeather();
+    }
 }

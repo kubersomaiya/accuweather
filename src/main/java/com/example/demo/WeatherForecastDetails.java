@@ -56,6 +56,16 @@ public class WeatherForecastDetails {
         this.accuLocationKey = accuLocationKey;
     }
 
+    public WeatherForecastDetails(LocalDate date, Double minTemp, Double maxTemp,
+                              String district, String state, String accuLocationKey) {
+        this.date = date;
+        this.minTemp = minTemp;
+        this.maxTemp = maxTemp;
+        this.district = district;
+        this.state = state;
+        this.accuLocationKey = accuLocationKey;
+    }
+
     // Getters and setters
     public LocalDate getDate() {
         return date;
