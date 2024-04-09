@@ -16,7 +16,7 @@ public class WeatherService {
     @Autowired
     private LocationDetailsRepository locationRepo;
     @Autowired
-    private WeatherForecastDetailsRepository foorecastRepo;
+    private WeatherForecastDetailsRepository forecastRepo;
     @Autowired
     private AccuweatherUtil accuWeatherUtil;
     @Autowired
@@ -25,12 +25,12 @@ public class WeatherService {
     private OpenweathermapUtil openweathermapUtil;
 
     public List<WeatherForecastDetailsDTO> getAllForecastData() {
-        return converter.convert(foorecastRepo.findAll());
+        return converter.convert(forecastRepo.findAll());
     }
 
     public List<WeatherForecastDetailsDTO> getForecastDataByDistrict(String state, String district) {
 
-        return converter.convert(foorecastRepo.filterActualForecastData(state, district));
+        return converter.convert(forecastRepo.filterActualForecastData(state, district));
     }
 
     public List<LocationDetails> getDistrictsWithLocationKeyNull() {
@@ -71,7 +71,7 @@ public class WeatherService {
     }
 
     public void callForecastApiForAllData() {
-        foorecastRepo.deleteForecastDataGreaterThanToday();
+        forecastRepo.deleteForecastDataGreaterThanToday();
         List<LocationDetails> allData = locationRepo.findAll();
         List<WeatherForecastDetails> forecastData = new ArrayList<>();
         List<WeatherForecastDetails> finalData = new ArrayList<>();
@@ -86,7 +86,7 @@ public class WeatherService {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
         }
-        foorecastRepo.saveAll(finalData);
+        forecastRepo.saveAll(finalData);
     }
 
     
@@ -95,7 +95,7 @@ public class WeatherService {
     }
     
     public void callForecastApiForAllDataOpenWeather() {
-        foorecastRepo.deleteForecastDataGreaterThanToday();
+        forecastRepo.deleteForecastDataGreaterThanToday();
         List<LocationDetails> allData = locationRepo.findAll();
         List<WeatherForecastDetails> forecastData = new ArrayList<>();
         List<WeatherForecastDetails> finalData = new ArrayList<>();
@@ -110,7 +110,7 @@ public class WeatherService {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
         }
-        foorecastRepo.saveAll(finalData);
+        forecastRepo.saveAll(finalData);
     }
 
     @Scheduled(cron = "0 0 6 * * *")
