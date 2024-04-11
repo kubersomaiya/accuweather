@@ -14,4 +14,7 @@ public interface LocationDetailsRepository extends JpaRepository<LocationDetails
 
     @Query("SELECT ld.state FROM LocationDetails ld WHERE ld.district = ?1")
     String findStateWithDistrict(String district);
+
+    @Query("SELECT ld.district FROM LocationDetails ld")
+    List<String> getAllDistricts();
 }

@@ -22,8 +22,10 @@ public class WeatherService {
     private AccuweatherUtil accuWeatherUtil;
     @Autowired
     private WeatherForecastDetailsConverter converter;
-    @Autowired 
+    @Autowired
     private OpenweathermapUtil openweathermapUtil;
+    @Autowired
+    private WeatherServiceFactory weatherServiceFactory;
 
     private static final Logger LOGGER = Logger.getLogger(WeatherService.class.getName());
 
@@ -70,22 +72,19 @@ public class WeatherService {
         locationRepo.saveAll(allData);
     }
 
-    public List<WeatherForecastDetails> getForecastData(String locationKey) throws ParseException {
-        return accuWeatherUtil.getForecastDetails(locationKey);
-    }
-
     public void callForecastApiForAllData() {
         forecastRepo.deleteForecastDataGreaterThanToday();
         List<LocationDetails> allData = locationRepo.findAll();
-        List<WeatherForecastDetails> forecastData = new ArrayList<>();
         List<WeatherForecastDetails> finalData = new ArrayList<>();
+        List<WeatherForecastDetails> forecastData = new ArrayList<>();
         for (LocationDetails accuweather : allData) {
             try {
-                forecastData = getForecastData(accuweather.getAccuweather_locationKey());
-                for (WeatherForecastDetails data : forecastData) {
-                    finalData.add(data);
-                }
+                // call below method to hit openweathermap API
+                forecastData = weatherServiceFactory.createWeatherService(accuweather.getDistrict());
                 
+                // call below method to hit accuweather API
+                // forecastData = weatherServiceFactory.createWeatherService(accuweather.getAccuweather_locationKey());
+                finalData.addAll(forecastData);
             } catch (Exception e) {
                 throw new NoForecastDetailsFoundException(e.getMessage());
             }
@@ -93,47 +92,16 @@ public class WeatherService {
         LOGGER.info("Called API for forecast details using Accuweather for all districts and saved in db");
         forecastRepo.saveAll(finalData);
     }
-    
-    
-    public List<WeatherForecastDetails> getOpenweatherForecast(String district){
-        return openweathermapUtil.getForecastDetails(district);
-    }
-    
-    public void callForecastApiForAllDataOpenWeather() {
-        forecastRepo.deleteForecastDataGreaterThanToday();
-        List<LocationDetails> allData = locationRepo.findAll();
-        List<WeatherForecastDetails> forecastData = new ArrayList<>();
-        List<WeatherForecastDetails> finalData = new ArrayList<>();
-        for (LocationDetails accuweather : allData) {
-            try {
-                forecastData = getOpenweatherForecast(accuweather.getDistrict());
-                for (WeatherForecastDetails data : forecastData) {
-                    finalData.add(data);
-                }
-                
-            } catch (Exception e) {
-                throw new NoForecastDetailsFoundException(e.getMessage());
-            }
-        }
-        LOGGER.info("Called API for forecast details using OpenWeather for all districts and saved in db");
-        forecastRepo.saveAll(finalData);
-    }
-    
+
     @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateLocationData() {
         callAccuweatherLocationApiForAllData();
         LOGGER.info("Scheduler to save Location Data executed");
     }
-    
-    
+
     @Scheduled(cron = "0 0 6 * * *")
     public void saveOrUpdateAccuweatherForecastData() {
         callForecastApiForAllData();
         LOGGER.info("Scheduler to save Forecast Data using Accuweather executed");
-    }
-    @Scheduled(cron = "0 0 6 * * *")
-    public void saveOrUpdateOpenWeatherForecastData() {
-        callForecastApiForAllDataOpenWeather();
-        LOGGER.info("Scheduler to save Forecast Data using Openweather executed");
     }
 }
