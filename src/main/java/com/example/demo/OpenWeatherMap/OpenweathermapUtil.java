@@ -95,7 +95,7 @@ public class OpenweathermapUtil implements WeatherInterface {
                     List<Weather> weath = forecastData.getWeather();
 
                     for (Weather data : weath) {
-                        if (hour == 9) {
+                        if ((hour >= 6 && hour <= 18)) {
                             obj = hashMap.get(forecastDate);
                             if (obj == null) {
                                 obj = new WeatherForecastDetails();
@@ -110,13 +110,14 @@ public class OpenweathermapUtil implements WeatherInterface {
                             } else {
                                 obj.setDayForecast(data.getDescription());
                             }
-                        } else if (hour == 21) {
+                        } else if ((hour >= 18 && hour <= 21) || (hour >= 21 || hour <= 3)) {
                             obj = hashMap.get(forecastDate);
                             if (obj != null) {
                                 obj.setNightForecast(data.getDescription());
                             }
                         }
                     }
+                    
                 }
 
                 for (Map.Entry<LocalDate, WeatherForecastDetails> entry : hashMap.entrySet()) {
@@ -124,7 +125,19 @@ public class OpenweathermapUtil implements WeatherInterface {
                     WeatherForecastDetails data = entry.getValue();
                     forecastsList.add(data);
                 }
-                
+
+                for(WeatherForecastDetails data : forecastsList){
+                    System.out.println("-----------start--------");
+                    System.out.println(data.getDate());
+                    System.out.println(data.getDistrict());
+                    System.out.println(data.getState());
+                    System.out.println(data.getAccuLocationKey());
+                    System.out.println(data.getMinTemp());
+                    System.out.println(data.getMaxTemp());
+                    System.out.println(data.getDayForecast());
+                    System.out.println(data.getNightForecast());
+                    System.out.println("---------end---------");
+                }
 
             } else {
                 throw new NoForecastDetailsFoundException("Error in fetching Forecast Details ... " + responseCode);
